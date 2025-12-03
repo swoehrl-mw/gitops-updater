@@ -1,0 +1,19 @@
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kube-prometheus-stack
+  namespace: default
+spec:
+  interval: 10m
+  timeout: 5m
+  chart:
+    spec:
+      chart: kube-prometheus-stack
+      version: ${kpsVersion}
+      sourceRef:
+        kind: HelmRepository
+        name: prometheus
+      interval: 5m
+  releaseName: kube-prometheus-stack
+  values:
+    replicaCount: 2

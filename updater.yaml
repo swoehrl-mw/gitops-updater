@@ -1,0 +1,33 @@
+baseDir: example
+releases:
+  - helm:
+      repo: https://kubernetes.github.io/ingress-nginx
+      chart: ingress-nginx
+    target:
+      file: nginx.yaml
+      postBuildVariable: nginxVersion
+  - helm:
+      repo: oci://ghcr.io/prometheus-community/charts
+      chart: kube-prometheus-stack
+    target:
+      file: kps.yaml
+      postBuildVariable: kpsVersion
+  - helm:
+      repo: oci://ghcr.io/stefanprodan/charts
+      chart: podinfo
+    target:
+      file: podinfo.yaml
+      postBuildVariable: podinfoVersion
+  - container:
+      image: hivemq/hivemq4
+      versionRegex: \d+\.\d+\.\d+
+    target:
+      file: hivemq.yaml
+      postBuildVariable: hivemqVersion
+stages:
+  - name: dev
+    clusters:
+      - dev
+  - name: prod
+    clusters:
+      - prod

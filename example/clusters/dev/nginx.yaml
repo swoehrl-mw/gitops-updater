@@ -1,0 +1,17 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: ingress-nginx
+  namespace: default
+spec:
+  interval: 10m
+  targetNamespace: default
+  sourceRef:
+    kind: GitRepository
+    name: gitops
+  path: "./example/apps/ingress-nginx"
+  prune: true
+  timeout: 1m
+  postBuild:
+    substitute:
+      nginxVersion: "1.2.3"
