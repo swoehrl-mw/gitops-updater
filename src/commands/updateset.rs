@@ -13,18 +13,27 @@ use crate::{
 pub async fn run(cmd: UpdatesetCmd) -> anyhow::Result<()> {
     let config = read_config(cmd.config)?;
     let mut backend = init_backend(config.backend.clone())?;
-    match cmd.subcmd {
+    let result = match cmd.subcmd {
         Some(UpdatesetSubCmd::New) | None => {
-            generate_new_updateset(config, backend.as_mut()).await?;
+            generate_new_updateset(config, backend.as_mut()).await?
         }
+    };
+    if cmd.exit_with_result && result == CommandResult::NoChange {
+        std::process::exit(2);
     }
     Ok(())
+}
+
+#[derive(PartialEq, Eq)]
+enum CommandResult {
+    NoChange,
+    NewUpdateset,
 }
 
 async fn generate_new_updateset(
     config: Config,
     backend: &mut dyn StorageBackend,
-) -> anyhow::Result<()> {
+) -> anyhow::Result<CommandResult> {
     let mut changes = Vec::new();
     // find newest versions
     for release in config.releases.clone() {
@@ -49,14 +58,15 @@ async fn generate_new_updateset(
     let changes = check_for_actual_updates(config, changes)?;
     if changes.is_empty() {
         println!("No updates found, not generating an updateset");
-        return Ok(());
+        return Ok(CommandResult::NoChange);
     }
     let set = UpdateSet {
         id: generate_id(),
         updates: changes,
         status: None,
     };
-    backend.update_updateset(set.id.clone(), set)
+    backend.update_updateset(set.id.clone(), set)?;
+    Ok(CommandResult::NewUpdateset)
 }
 
 async fn helm_version(helm: Helm) -> anyhow::Result<Option<String>> {

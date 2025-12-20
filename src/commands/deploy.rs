@@ -19,10 +19,18 @@ pub fn run(cmd: DeployCmd) -> anyhow::Result<()> {
         updateset
     } else {
         let updatesets = backend.list_updatesets()?;
-        let updateset = Select::with_theme(&ColorfulTheme::default())
-            .with_prompt("Select updateset")
-            .items(&updatesets)
-            .interact()?;
+        if updatesets.is_empty() {
+            println!("No updateset found. Exiting");
+            std::process::exit(1);
+        }
+        let updateset = if updatesets.len() == 1 {
+            0
+        } else {
+            Select::with_theme(&ColorfulTheme::default())
+                .with_prompt("Select updateset")
+                .items(&updatesets)
+                .interact()?
+        };
         updatesets.get(updateset).unwrap().to_owned()
     };
     println!("Using updateset {updateset}");

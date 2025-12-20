@@ -24,6 +24,9 @@ pub struct UpdatesetCmd {
     #[arg(short = 'c', long = "config")]
     /// path to the configfile
     pub config: Option<PathBuf>,
+    #[arg(short = 'e', long = "exit-code")]
+    /// exit with code based on result (0=updateset generated, 2=no updates found, other=error)
+    pub exit_with_result: bool,
     #[command(subcommand)]
     pub subcmd: Option<UpdatesetSubCmd>,
 }
