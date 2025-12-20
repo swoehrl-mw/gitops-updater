@@ -87,6 +87,10 @@ pub fn run(cmd: GenerateConfigCmd) -> anyhow::Result<()> {
         });
     }
 
+    // Make sure we don't have duplicates due to version variables used multiple times
+    releases.sort();
+    releases.dedup();
+
     let config = Config {
         base_dir: config_basedir,
         releases,

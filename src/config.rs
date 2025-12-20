@@ -14,7 +14,7 @@ pub struct Config {
     pub backend: Option<BackendConfig>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Release {
@@ -23,28 +23,28 @@ pub struct Release {
     pub target: Target,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub enum ReleaseVariant {
     Helm(Helm),
     Container(Container),
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct Helm {
     pub repo: String,
     pub chart: String,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct Container {
     pub image: String,
     pub version_regex: Option<String>,
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct Target {
     pub file: String,
