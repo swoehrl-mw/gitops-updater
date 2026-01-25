@@ -39,6 +39,7 @@ releases:
     target:
       file: kps.yaml
       postBuildVariable: kpsVersion
+    name: prometheus  # Optional name
   # A component with a container image
   - container:
       image: hivemq/hivemq4  # The registry/image name
@@ -46,6 +47,7 @@ releases:
     target:
       file: hivemq.yaml
       postBuildVariable: hivemqVersion
+    name: hivemq  # Optional name
 # A list of stages and clusters. These are processed in order
 stages:
   - name: dev  # Name of the stage
@@ -59,7 +61,7 @@ stages:
 
 You can have gitops-updater analyze your structure and automatically generate the configuration file for you. Run `gitops-updater generate-config example` for that (add `-c <configfile>` to write the config to a different file).
 
-`container` components can not be detected automatically, you need to manually add them. The tool also does not know about stages and simply places all clusters in a default stage. You need to edit and add stages based on your setup.
+`container` components can not be detected automatically, you need to manually add them. The tool also does not know about stages and simply places all clusters in a default stage. You need to edit and add stages based on your setup. For nicer reading you can optionally give each release a `name`. If none is configured the helm chart name or container image will be used when the list of releases that have updates is printed by the `updateset` command.
 
 ## Available commands
 

@@ -153,7 +153,7 @@ impl TagClient {
         let mut response = self.perform_request(url).await?;
         if response.status().as_u16() == 401 {
             if self.token.is_some() {
-                panic!("Got 401 even though token was provided");
+                anyhow::bail!("Got 401 even though token was provided");
             }
             self.handle_auth(&response).await?;
             response = self.perform_request(url).await?;
@@ -223,6 +223,7 @@ struct RegistryInfo {
 
 fn calculate_url(image_name: &str) -> RegistryInfo {
     if image_name.contains('.') {
+        // we assume it is a third-party registry and not dockerhub
         let (host, image) = image_name.split_once('/').unwrap_or_else(|| {
             panic!("Could not split image name into host and image: '{image_name}'")
         });

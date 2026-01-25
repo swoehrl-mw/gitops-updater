@@ -37,6 +37,7 @@ async fn generate_new_updateset(
     let mut changes = Vec::new();
     // find newest versions
     for release in config.releases.clone() {
+        let name = release.name();
         let version = match release.variant {
             ReleaseVariant::Helm(helm) => helm_version(helm).await?,
             ReleaseVariant::Container(container) => {
@@ -49,6 +50,7 @@ async fn generate_new_updateset(
         };
         if let Some(version) = version {
             changes.push(Update {
+                name,
                 file: release.target.file.clone(),
                 post_build_variable: release.target.post_build_variable,
                 version,
@@ -60,12 +62,19 @@ async fn generate_new_updateset(
         println!("No updates found, not generating an updateset");
         return Ok(CommandResult::NoChange);
     }
+
+    let mut names: Vec<String> = changes.iter().map(|u| u.name.clone()).collect();
+    names.sort();
+
     let set = UpdateSet {
         id: generate_id(),
         updates: changes,
         status: None,
     };
     backend.update_updateset(set.id.clone(), set)?;
+
+    println!("Found updates for: {}", names.join(", "));
+
     Ok(CommandResult::NewUpdateset)
 }
 
@@ -75,7 +84,7 @@ async fn helm_version(helm: Helm) -> anyhow::Result<Option<String>> {
     } else if helm.repo.starts_with("oci://") {
         oci::find_newest_version_of_chart(&helm.repo.replace("oci://", ""), &helm.chart).await
     } else {
-        panic!("Unknown protocol: {}", helm.repo);
+        anyhow::bail!("Unknown protocol: {}", helm.repo);
     }
 }
 

@@ -18,9 +18,20 @@ pub struct Config {
 #[serde(rename_all = "camelCase")]
 #[serde(deny_unknown_fields)]
 pub struct Release {
+    pub name: Option<String>,
     #[serde(flatten)]
     pub variant: ReleaseVariant,
     pub target: Target,
+}
+
+impl Release {
+    pub fn name(&self) -> String {
+        if let Some(name) = self.name.as_ref() {
+            name.clone()
+        } else {
+            self.variant.name()
+        }
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -30,6 +41,15 @@ pub enum ReleaseVariant {
     Container(Container),
 }
 
+impl ReleaseVariant {
+    pub fn name(&self) -> String {
+        match self {
+            ReleaseVariant::Helm(helm) => helm.name(),
+            ReleaseVariant::Container(container) => container.name(),
+        }
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct Helm {
@@ -37,11 +57,23 @@ pub struct Helm {
     pub chart: String,
 }
 
+impl Helm {
+    pub fn name(&self) -> String {
+        self.chart.clone()
+    }
+}
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[serde(rename_all = "camelCase")]
 pub struct Container {
     pub image: String,
     pub version_regex: Option<String>,
+}
+
+impl Container {
+    pub fn name(&self) -> String {
+        self.image.clone()
+    }
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -86,6 +118,8 @@ pub struct UpdateSet {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Update {
+    #[serde(skip_serializing, default)]
+    pub name: String,
     pub file: String,
     pub post_build_variable: String,
     pub version: String,
@@ -95,4 +129,58 @@ pub struct Update {
 #[serde(rename_all = "camelCase")]
 pub struct Status {
     pub stages_completed: Vec<String>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn dummy_target() -> Target {
+        Target {
+            file: "some-file".to_owned(),
+            post_build_variable: "someVersion".to_owned(),
+        }
+    }
+
+    #[test]
+    fn release_name_prefers_explicit_name() {
+        let release = Release {
+            name: Some("explicit-name".to_owned()),
+            variant: ReleaseVariant::Helm(Helm {
+                repo: "some-repo".to_owned(),
+                chart: "chart-name".to_owned(),
+            }),
+            target: dummy_target(),
+        };
+
+        assert_eq!(release.name(), "explicit-name".to_owned());
+    }
+
+    #[test]
+    fn release_name_falls_back_to_helm_chart() {
+        let release = Release {
+            name: None,
+            variant: ReleaseVariant::Helm(Helm {
+                repo: "some-repo".to_owned(),
+                chart: "chart-name".to_owned(),
+            }),
+            target: dummy_target(),
+        };
+
+        assert_eq!(release.name(), "chart-name".to_owned());
+    }
+
+    #[test]
+    fn release_name_falls_back_to_container_image() {
+        let release = Release {
+            name: None,
+            variant: ReleaseVariant::Container(Container {
+                image: "some-image".to_owned(),
+                version_regex: None,
+            }),
+            target: dummy_target(),
+        };
+
+        assert_eq!(release.name(), "some-image".to_owned());
+    }
 }

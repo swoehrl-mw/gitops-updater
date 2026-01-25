@@ -72,10 +72,11 @@ pub fn run(cmd: GenerateConfigCmd) -> anyhow::Result<()> {
         } else if let Some(repo_url) = helm.repo_url {
             repo_url
         } else {
-            panic!("Neither repo_url nor repo_name found");
+            anyhow::bail!("Neither repo_url nor repo_name found in {file}");
         };
 
         releases.push(Release {
+            name: None,
             variant: ReleaseVariant::Helm(Helm {
                 repo: repo_url,
                 chart: helm.chart_name,
