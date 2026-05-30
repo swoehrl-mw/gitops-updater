@@ -30,12 +30,14 @@ releases:
   - helm:
       repo: https://kubernetes.github.io/ingress-nginx  # The Helm repository URL
       chart: ingress-nginx  # The name of the chart
+      versionRegex: \d+\.\d+\.\d+ # An optional regex to filter out versions (e.g. pre-releases)
     target:
       file: nginx.yaml  # The name of the file in the cluster folder containing the Kustomization for the component/app
       postBuildVariable: nginxVersion  # The postBuild variable that contains the version
   - helm:
       repo: oci://ghcr.io/prometheus-community/charts  # Helm repositories can also be read from OCI
       chart: kube-prometheus-stack
+      versionRegex: \d+\.\d+\.\d+ # An optional regex to filter out versions (e.g. pre-releases)
     target:
       file: kps.yaml
       postBuildVariable: kpsVersion

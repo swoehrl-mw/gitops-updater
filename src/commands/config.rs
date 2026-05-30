@@ -80,6 +80,7 @@ pub fn run(cmd: GenerateConfigCmd) -> anyhow::Result<()> {
             variant: ReleaseVariant::Helm(Helm {
                 repo: repo_url,
                 chart: helm.chart_name,
+                version_regex: None,
             }),
             target: Target {
                 file,

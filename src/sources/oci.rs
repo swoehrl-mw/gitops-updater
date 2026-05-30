@@ -9,13 +9,22 @@ use reqwest::{
 use semver::Version;
 use serde::Deserialize;
 
-use crate::sources::auth::auth_from_docker_config;
+use crate::sources::{auth::auth_from_docker_config, helper::filter_based_on_regex};
 
 pub async fn find_newest_version_of_chart(
     repo_url: &str,
     chart_name: &str,
+    version_regex: &Option<String>,
 ) -> anyhow::Result<Option<String>> {
     let tags = get_tags(&format!("{repo_url}/{chart_name}")).await?;
+    newest_chart_version(tags, version_regex)
+}
+
+fn newest_chart_version(
+    tags: Vec<String>,
+    version_regex: &Option<String>,
+) -> anyhow::Result<Option<String>> {
+    let tags = filter_based_on_regex(tags, version_regex)?;
     let newest = tags
         .into_iter()
         .filter_map(|v| Version::parse(&v).ok())
@@ -29,12 +38,14 @@ pub async fn find_newest_version_of_container_image(
     version_regex: &Option<String>,
 ) -> anyhow::Result<Option<String>> {
     let tags = get_tags(image_name).await?;
-    let mut tags = if let Some(regex) = version_regex {
-        let re = Regex::new(regex)?;
-        tags.into_iter().filter(|t| re.is_match(t)).collect()
-    } else {
-        tags
-    };
+    newest_tag_version(tags, version_regex)
+}
+
+fn newest_tag_version(
+    tags: Vec<String>,
+    version_regex: &Option<String>,
+) -> anyhow::Result<Option<String>> {
+    let mut tags = filter_based_on_regex(tags, version_regex)?;
     tags.sort_by(|a, b| compare_tags(b, a));
     Ok(tags.into_iter().next())
 }
@@ -382,5 +393,35 @@ mod tests {
         // release > prerelease
         assert_eq!(compare_tags("v1.2.3", "1.2.3-beta"), Ordering::Greater);
         assert_eq!(compare_tags("1.2.3-alpha", "1.2.3-beta"), Ordering::Less);
+    }
+
+    #[test]
+    fn test_newest_chart_version() {
+        let tags = vec![
+            "1.0.0".to_owned(),
+            "1.2.0".to_owned(),
+            "1.1.5".to_owned(),
+            "1.3.0-rc.1".to_owned(),
+        ];
+
+        let newest = newest_chart_version(tags, &Some(r"^\d+.\d+.\d+$".to_owned()))
+            .expect("Could not determine newest chart version");
+
+        assert_eq!(newest.as_deref(), Some("1.2.0"));
+    }
+
+    #[test]
+    fn test_newest_tag_version() {
+        let tags = vec![
+            "1.0.0".to_owned(),
+            "1.2.0".to_owned(),
+            "1.1.5".to_owned(),
+            "1.3.0-rc.1".to_owned(),
+        ];
+
+        let newest = newest_tag_version(tags, &Some(r"^\d+.\d+.\d+$".to_owned()))
+            .expect("Could not determine newest tag version");
+
+        assert_eq!(newest.as_deref(), Some("1.2.0"));
     }
 }

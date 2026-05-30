@@ -80,9 +80,14 @@ async fn generate_new_updateset(
 
 async fn helm_version(helm: Helm) -> anyhow::Result<Option<String>> {
     if helm.repo.starts_with("http") {
-        helm::find_newest_version_of_chart(&helm.repo, &helm.chart).await
+        helm::find_newest_version_of_chart(&helm.repo, &helm.chart, &helm.version_regex).await
     } else if helm.repo.starts_with("oci://") {
-        oci::find_newest_version_of_chart(&helm.repo.replace("oci://", ""), &helm.chart).await
+        oci::find_newest_version_of_chart(
+            &helm.repo.replace("oci://", ""),
+            &helm.chart,
+            &helm.version_regex,
+        )
+        .await
     } else {
         anyhow::bail!("Unknown protocol: {}", helm.repo);
     }

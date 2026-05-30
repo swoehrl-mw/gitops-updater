@@ -55,6 +55,7 @@ impl ReleaseVariant {
 pub struct Helm {
     pub repo: String,
     pub chart: String,
+    pub version_regex: Option<String>,
 }
 
 impl Helm {
@@ -149,6 +150,7 @@ mod tests {
             variant: ReleaseVariant::Helm(Helm {
                 repo: "some-repo".to_owned(),
                 chart: "chart-name".to_owned(),
+                version_regex: None,
             }),
             target: dummy_target(),
         };
@@ -163,6 +165,7 @@ mod tests {
             variant: ReleaseVariant::Helm(Helm {
                 repo: "some-repo".to_owned(),
                 chart: "chart-name".to_owned(),
+                version_regex: None,
             }),
             target: dummy_target(),
         };
