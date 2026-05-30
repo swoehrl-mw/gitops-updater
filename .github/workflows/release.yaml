@@ -34,12 +34,13 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd #v6.0.2
 
       - name: Build binary
-        uses: houseabsolute/actions-rust-cross@v1
+        uses: houseabsolute/actions-rust-cross@fe6ede73c7f0a50412ec05994e2aa5a7bf635eac #v1.0.7
         with:
           command: build
+          toolchain: 1.96.0
           target: ${{ matrix.platform.target }}
           args: "--locked --release"
           strip: true
@@ -54,7 +55,7 @@ jobs:
           fi
 
       - name:  Publish artifacts
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@b4309332981a82ec1c5618f44dd2e27cc8bfbfda #v3.0.0
         with:
           draft: true
           files: gitops-updater-${{ matrix.platform.binary_suffix}}
