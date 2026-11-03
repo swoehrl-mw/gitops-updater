@@ -41,7 +41,7 @@ pub async fn fetch_and_parse_helm_index(repo_url: &str) -> anyhow::Result<HelmIn
         request = request.header(AUTHORIZATION, format!("Basic {credentials}"));
     }
     let response = request.send().await?.text().await?;
-    let index: HelmIndex = serde_yaml::from_str(&response)?;
+    let index: HelmIndex = serde_saphyr::from_str(&response)?;
     Ok(index)
 }
 
@@ -98,8 +98,6 @@ fn host_from_url(url: &str) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use serde_yaml;
-
     #[test]
     fn test_newest_version() {
         let yaml = r#"
@@ -113,7 +111,7 @@ entries:
     - version: "6.0.0"
     - version: "6.2.1"
 "#;
-        let index: HelmIndex = serde_yaml::from_str(yaml).expect("Failed to parse HelmIndex");
+        let index: HelmIndex = serde_saphyr::from_str(yaml).expect("Failed to parse HelmIndex");
         let regex = Regex::new(r"^\d+.\d+.\d+$").unwrap();
         let newest = newest_version(&index, "nginx", Some(regex)).expect("No version found");
         assert_eq!(newest.version.as_deref(), Some("1.2.0"));

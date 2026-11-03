@@ -102,7 +102,7 @@ pub fn read_config(path: Option<PathBuf>) -> anyhow::Result<Config> {
     let config_path = path.unwrap_or_else(|| PathBuf::from("updater.yaml"));
     let config_content = std::fs::read_to_string(&config_path)
         .map_err(|e| anyhow::anyhow!("Failed to read config file: {}", e))?;
-    let config: Config = serde_yaml::from_str(&config_content)
+    let config: Config = serde_saphyr::from_str(&config_content)
         .map_err(|e| anyhow::anyhow!("Failed to parse config file: {}", e))?;
     Ok(config)
 }

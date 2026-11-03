@@ -11,12 +11,12 @@ jobs:
       matrix:
         platform:
           - os-name: Linux-x86_64
-            runs-on: ubuntu-24.04
+            runs-on: ubuntu-26.04
             target: x86_64-unknown-linux-musl
             binary_suffix: linux-amd64
 
           - os-name: Linux-aarch64
-            runs-on: ubuntu-24.04-arm
+            runs-on: ubuntu-26.04-arm
             target: aarch64-unknown-linux-musl
             binary_suffix: linux-aarch64
 
@@ -40,7 +40,7 @@ jobs:
         uses: houseabsolute/actions-rust-cross@fe6ede73c7f0a50412ec05994e2aa5a7bf635eac #v1.0.7
         with:
           command: build
-          toolchain: 1.96.0
+          toolchain: 1.99.1
           target: ${{ matrix.platform.target }}
           args: "--locked --release"
           strip: true

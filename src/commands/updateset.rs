@@ -132,7 +132,7 @@ fn get_version_from_kustomization(
     let Ok(data) = std::fs::read_to_string(&path) else {
         return Ok(None);
     };
-    let kustomization = serde_yaml::from_str::<Kustomization>(&data)?;
+    let kustomization = serde_saphyr::from_str::<Kustomization>(&data)?;
     let res = kustomization
         .spec
         .post_build

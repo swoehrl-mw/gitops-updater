@@ -101,7 +101,7 @@ pub fn run(cmd: GenerateConfigCmd) -> anyhow::Result<()> {
         backend: None,
     };
 
-    let config = serde_yaml::to_string(&config)?;
+    let config = serde_saphyr::to_string(&config)?;
     let config_path = cmd.config.unwrap_or_else(|| "updater.yaml".into());
 
     std::fs::write(&config_path, &config)?;
@@ -154,7 +154,7 @@ fn find_helm_in_file(
     let data = std::fs::read_to_string(path)?;
     for part in data.split("\n---\n") {
         let part = part.trim_end_matches("---");
-        let data = match serde_yaml::from_str::<serde_yaml::Value>(part) {
+        let data = match serde_saphyr::from_str::<serde_json::Value>(part) {
             Ok(data) => data,
             Err(err) => {
                 println!("Warning: Can not parse {path:?} as yaml: {err}");
@@ -167,7 +167,7 @@ fn find_helm_in_file(
         };
 
         if kind == "HelmRelease" {
-            let release: HelmRelease = serde_yaml::from_value(data)
+            let release: HelmRelease = serde_json::from_value(data)
                 .context(format!("could not parse HelmRelease in {path:?}"))?;
             let Some(chart) = release.spec.chart else {
                 continue;
@@ -206,7 +206,7 @@ fn find_helm_in_file(
                 variable,
             });
         } else if kind == "HelmRepository" {
-            let repo: HelmRepository = serde_yaml::from_value(data)
+            let repo: HelmRepository = serde_json::from_value(data)
                 .context(format!("could not parse HelmRepository in {path:?}"))?;
             let meta = repo.k8s_base.metadata;
 
@@ -220,7 +220,7 @@ fn find_helm_in_file(
                 repo.spec.url,
             );
         } else if kind == "OCIRepository" {
-            let repo: OciRepository = serde_yaml::from_value(data)
+            let repo: OciRepository = serde_json::from_value(data)
                 .context(format!("could not parse OCIRepository in {path:?}"))?;
 
             let (repo_url, chart_name) = repo.spec.url.rsplit_once('/').unwrap();
@@ -283,7 +283,7 @@ fn find_file_for_app_path(base_path: &Path, app_path: &Path) -> anyhow::Result<O
 
 fn app_path_in_file(file_path: &Path, app_path: &Path) -> anyhow::Result<bool> {
     let data = std::fs::read_to_string(file_path)?;
-    if let Ok(kustomization) = serde_yaml::from_str::<Kustomization>(&data) {
+    if let Ok(kustomization) = serde_saphyr::from_str::<Kustomization>(&data) {
         let path = kustomization.spec.path;
         let path = path.trim_start_matches("./").trim_matches('/');
         return Ok(Path::new(path) == app_path);
